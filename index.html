@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
+
+<title>Last Finger</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(
+            circle at 50% 30%,
+            #243c7a,
+            #0b1024 45%,
+            #03050d
+        );
+    color: white;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+}
+
+/* HEADER */
+
+header {
+    position: absolute;
+    top: 22px;
+    width: 100%;
+    text-align: center;
+    z-index: 100;
+    pointer-events: none;
+}
+
+h1 {
+    font-size: clamp(35px, 9vw, 60px);
+    font-weight: 900;
+    letter-spacing: 4px;
+
+    text-shadow:
+        0 0 10px #6287ff,
+        0 0 30px #315cff;
+}
+
+#status {
+    margin-top: 8px;
+    color: #aab6df;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* TOUCH AREA */
+
+#arena {
+    position: absolute;
+    inset: 0;
+}
+
+/* FINGER */
+
+.finger {
+    position: absolute;
+
+    width: 78px;
+    height: 78px;
+
+    transform:
+        translate(-50%, -50%)
+        scale(1);
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            #86a7ff,
+            #4266e8 55%,
+            #17286e
+        );
+
+    border: 3px solid white;
+
+    box-shadow:
+        0 0 20px rgba(75,120,255,.7);
+
+    font-size: 28px;
+    font-weight: 900;
+
+    z-index: 10;
+
+    transition:
+        transform .13s ease,
+        opacity .3s ease,
+        filter .3s ease;
+}
+
+/* RANDOM */
+
+.finger.selected {
+    transform:
+        translate(-50%, -50%)
+        scale(1.45);
+
+    background:
+        radial-gradient(
+            circle,
+            white,
+            #70a1ff 35%,
+            #315cff 75%
+        );
+
+    box-shadow:
+        0 0 30px #79a7ff,
+        0 0 80px #376bff;
+
+    z-index: 50;
+}
+
+/* LOSER */
+
+.finger.loser {
+
+    transform:
+        translate(-50%, -50%)
+        scale(1.65);
+
+    background:
+        radial-gradient(
+            circle,
+            #ff8490,
+            #e52b48 50%,
+            #73091b
+        );
+
+    box-shadow:
+        0 0 30px #ff314f,
+        0 0 90px #ff1235;
+
+    z-index: 100;
+
+    animation:
+        shake .45s ease,
+        loserPulse .6s infinite alternate;
+}
+
+@keyframes shake {
+
+    0% {
+        transform:
+            translate(-50%,-50%)
+            scale(1.6)
+            rotate(0deg);
+    }
+
+    25% {
+        transform:
+            translate(-50%,-50%)
+            scale(1.7)
+            rotate(-10deg);
+    }
+
+    50% {
+        transform:
+            translate(-50%,-50%)
+            scale(1.7)
+            rotate(10deg);
+    }
+
+    75% {
+        transform:
+            translate(-50%,-50%)
+            scale(1.7)
+            rotate(-7deg);
+    }
+
+    100% {
+        transform:
+            translate(-50%,-50%)
+            scale(1.65)
+            rotate(0);
+    }
+}
+
+@keyframes loserPulse {
+
+    from {
+        box-shadow:
+            0 0 20px #ff314f;
+    }
+
+    to {
+        box-shadow:
+            0 0 60px #ff314f,
+            0 0 110px #ff1235;
+    }
+}
+
+/* HIDE */
+
+.finger.gone {
+    opacity: 0;
+
+    transform:
+        translate(-50%, -50%)
+        scale(.1);
+
+    filter: blur(10px);
+}
+
+/* START */
+
+#start {
+
+    position: absolute;
+
+    bottom: 28px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: min(380px, 85%);
+    height: 64px;
+
+    border: none;
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4677ff,
+            #743dff
+        );
+
+    color: white;
+
+    font-size: 19px;
+    font-weight: 900;
+
+    letter-spacing: 3px;
+
+    box-shadow:
+        0 12px 35px
+        rgba(60,90,255,.5);
+
+    z-index: 200;
+}
+
+#start:disabled {
+    opacity: .35;
+}
+
+/* RESULT */
+
+#result {
+
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,.72);
+
+    backdrop-filter: blur(10px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: .3s;
+
+    z-index: 500;
+}
+
+#result.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.box {
+
+    width: 85%;
+    max-width: 400px;
+
+    padding: 35px 25px;
+
+    text-align: center;
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #202b55,
+            #0d1228
+        );
+
+    box-shadow:
+        0 25px 80px black;
+
+    transform: scale(.7);
+
+    transition:
+        transform .4s
+        cubic-bezier(.17,.89,.32,1.28);
+}
+
+#result.show .box {
+    transform: scale(1);
+}
+
+.dead {
+    font-size: 65px;
+}
+
+.title {
+    margin-top: 10px;
+    font-size: 30px;
+    font-weight: 900;
+    color: #ff536b;
+}
+
+.text {
+    margin-top: 10px;
+    color: #adb8dc;
+}
+
+#again {
+
+    margin-top: 25px;
+
+    padding: 16px 32px;
+
+    border: none;
+    border-radius: 15px;
+
+    background: white;
+    color: #10152b;
+
+    font-size: 16px;
+    font-weight: 900;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div id="app">
+
+<header>
+
+    <h1>LAST FINGER</h1>
+
+    <div id="status">
+        Put your fingers on the screen
+    </div>
+
+</header>
+
+
+<div id="arena"></div>
+
+
+<button id="start" disabled>
+    START
+</button>
+
+
+<div id="result">
+
+    <div class="box">
+
+        <div class="dead">💀</div>
+
+        <div class="title">
+            LAST FINGER
+        </div>
+
+        <div
+            class="text"
+            id="resultText">
+        </div>
+
+        <button id="again">
+            PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* ===============================
+   ELEMENTS
+================================ */
+
+const arena =
+    document.getElementById("arena");
+
+const start =
+    document.getElementById("start");
+
+const status =
+    document.getElementById("status");
+
+const result =
+    document.getElementById("result");
+
+const resultText =
+    document.getElementById("resultText");
+
+const again =
+    document.getElementById("again");
+
+
+/* ===============================
+   DATA
+================================ */
+
+let fingers = [];
+
+let gameStarted = false;
+
+let winner = null;
+
+let audio = null;
+
+
+/* ===============================
+   AUDIO
+================================ */
+
+function initAudio() {
+
+    if (!audio) {
+
+        audio =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+    }
+
+    if (
+        audio.state === "suspended"
+    ) {
+
+        audio.resume();
+
+    }
+}
+
+
+function beep(
+    frequency,
+    duration,
+    type = "sine"
+) {
+
+    if (!audio)
+        return;
+
+    const osc =
+        audio.createOscillator();
+
+    const gain =
+        audio.createGain();
+
+    osc.type = type;
+
+    osc.frequency.value =
+        frequency;
+
+    gain.gain.setValueAtTime(
+        .08,
+        audio.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        audio.currentTime + duration
+    );
+
+    osc.connect(gain);
+
+    gain.connect(
+        audio.destination
+    );
+
+    osc.start();
+
+    osc.stop(
+        audio.currentTime + duration
+    );
+}
+
+
+/* ===============================
+   TOUCH START
+================================ */
+
+arena.addEventListener(
+    "touchstart",
+    function(e) {
+
+        e.preventDefault();
+
+        if (gameStarted)
+            return;
+
+        initAudio();
+
+
+        for (
+            let i = 0;
+            i < e.changedTouches.length;
+            i++
+        ) {
+
+            const touch =
+                e.changedTouches[i];
+
+
+            /* MAX 8 */
+
+            if (
+                fingers.length >= 8
+            ) {
+                break;
+            }
+
+
+            /* Don't duplicate */
+
+            const exists =
+                fingers.some(
+                    f =>
+                    f.id ===
+                    touch.identifier
+                );
+
+            if (exists)
+                continue;
+
+
+            createFinger(
+                touch
+            );
+        }
+
+
+        updateUI();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* ===============================
+   TOUCH END
+================================ */
+
+arena.addEventListener(
+    "touchend",
+    function(e) {
+
+        e.preventDefault();
+
+        if (gameStarted)
+            return;
+
+
+        for (
+            let i = 0;
+            i < e.changedTouches.length;
+            i++
+        ) {
+
+            const id =
+                e.changedTouches[i]
+                .identifier;
+
+
+            removeFinger(id);
+        }
+
+
+        updateUI();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* ===============================
+   TOUCH CANCEL
+================================ */
+
+arena.addEventListener(
+    "touchcancel",
+    function(e) {
+
+        e.preventDefault();
+
+        if (gameStarted)
+            return;
+
+
+        for (
+            let i = 0;
+            i < e.changedTouches.length;
+            i++
+        ) {
+
+            removeFinger(
+                e.changedTouches[i]
+                .identifier
+            );
+        }
+
+
+        updateUI();
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* ===============================
+   CREATE
+================================ */
+
+function createFinger(touch) {
+
+    const element =
+        document.createElement("div");
+
+
+    element.className =
+        "finger";
+
+
+    const playerNumber =
+        fingers.length + 1;
+
+
+    element.textContent =
+        playerNumber;
+
+
+    element.style.left =
+        touch.clientX + "px";
+
+
+    element.style.top =
+        touch.clientY + "px";
+
+
+    arena.appendChild(
+        element
+    );
+
+
+    fingers.push({
+
+        id:
+            touch.identifier,
+
+        element:
+            element,
+
+        number:
+            playerNumber
+    });
+
+
+    /* appearing */
+
+    element.animate(
+        [
+            {
+                transform:
+                "translate(-50%,-50%) scale(0)"
+            },
+
+            {
+                transform:
+                "translate(-50%,-50%) scale(1)"
+            }
+        ],
+        {
+            duration: 220
+        }
+    );
+
+
+    beep(
+        500,
+        .08
+    );
+}
+
+
+/* ===============================
+   REMOVE
+================================ */
+
+function removeFinger(id) {
+
+    const index =
+        fingers.findIndex(
+            f => f.id === id
+        );
+
+
+    if (index === -1)
+        return;
+
+
+    fingers[index]
+        .element
+        .remove();
+
+
+    fingers.splice(
+        index,
+        1
+    );
+
+
+    renumber();
+}
+
+
+/* ===============================
+   RENUMBER
+================================ */
+
+function renumber() {
+
+    fingers.forEach(
+        (finger, index) => {
+
+            finger.number =
+                index + 1;
+
+            finger.element
+                .textContent =
+                index + 1;
+
+        }
+    );
+}
+
+
+/* ===============================
+   UI
+================================ */
+
+function updateUI() {
+
+    if (
+        fingers.length === 0
+    ) {
+
+        status.textContent =
+            "Put your fingers on the screen";
+
+        start.disabled = true;
+
+        start.textContent =
+            "START";
+
+        return;
+    }
+
+
+    status.textContent =
+        `${fingers.length} PLAYER` +
+        (
+            fingers.length > 1
+            ? "S READY"
+            : " READY"
+        );
+
+
+    start.disabled = false;
+
+
+    start.textContent =
+        `START • ${fingers.length}`;
+}
+
+
+/* ===============================
+   START GAME
+================================ */
+
+start.addEventListener(
+    "click",
+    function() {
+
+        if (
+            fingers.length === 0 ||
+            gameStarted
+        )
+            return;
+
+
+        initAudio();
+
+        gameStarted = true;
+
+        start.disabled = true;
+
+        start.style.opacity = "0";
+
+
+        status.textContent =
+            "CHOOSING...";
+
+
+        choose();
+    }
+);
+
+
+/* ===============================
+   RANDOM
+================================ */
+
+let lastIndex = -1;
+
+let round = 0;
+
+const rounds = 28;
+
+
+function choose() {
+
+    if (!gameStarted)
+        return;
+
+
+    let index;
+
+
+    do {
+
+        index =
+            Math.floor(
+                Math.random() *
+                fingers.length
+            );
+
+    } while (
+        index === lastIndex &&
+        fingers.length > 1
+    );
+
+
+    lastIndex = index;
+
+
+    /* remove old */
+
+    fingers.forEach(
+        f =>
+        f.element
+        .classList
+        .remove("selected")
+    );
+
+
+    /* select */
+
+    const current =
+        fingers[index];
+
+
+    current.element
+        .classList
+        .add("selected");
+
+
+    beep(
+        400 + Math.random() * 300,
+        .06,
+        "square"
+    );
+
+
+    round++;
+
+
+    /* speed */
+
+    const speed =
+        Math.max(
+            65,
+            220 - round * 6
+        );
+
+
+    if (
+        round >= rounds
+    ) {
+
+        setTimeout(
+            finish,
+            600
+        );
+
+        return;
+    }
+
+
+    setTimeout(
+        choose,
+        speed
+    );
+}
+
+
+/* ===============================
+   FINISH
+================================ */
+
+function finish() {
+
+    gameStarted = false;
+
+
+    fingers.forEach(
+        f => {
+
+            f.element
+             .classList
+             .remove(
+                 "selected"
+             );
+
+        }
+    );
+
+
+    /*
+       CURRENT RANDOM INDEX
+       IS LAST INDEX
+    */
+
+    winner =
+        fingers[lastIndex];
+
+
+    if (!winner)
+        return;
+
+
+    /* LOSER */
+
+    winner.element
+        .classList
+        .add("loser");
+
+
+    beep(
+        150,
+        .25,
+        "sawtooth"
+    );
+
+
+    setTimeout(
+        () => {
+
+            beep(
+                70,
+                .45,
+                "sawtooth"
+            );
+
+        },
+        130
+    );
+
+
+    /* hide others */
+
+    fingers.forEach(
+        (finger, index) => {
+
+            if (
+                index !== lastIndex
+            ) {
+
+                setTimeout(
+                    () => {
+
+                        finger.element
+                            .classList
+                            .add("gone");
+
+                    },
+                    Math.random() * 250
+                );
+
+            }
+
+        }
+    );
+
+
+    status.textContent =
+        `PLAYER ${winner.number} LOST!`;
+
+
+    setTimeout(
+        () => {
+
+            resultText.textContent =
+                `Player ${winner.number} is the last finger.`;
+
+            result.classList.add(
+                "show"
+            );
+
+        },
+        900
+    );
+}
+
+
+/* ===============================
+   AGAIN
+================================ */
+
+again.addEventListener(
+    "click",
+    function() {
+
+        result.classList.remove(
+            "show"
+        );
+
+
+        fingers.forEach(
+            f =>
+            f.element.remove()
+        );
+
+
+        fingers = [];
+
+        winner = null;
+
+        lastIndex = -1;
+
+        round = 0;
+
+        gameStarted = false;
+
+
+        start.style.opacity =
+            "1";
+
+        updateUI();
+    }
+);
+
+
+/* ===============================
+   PREVENT ZOOM
+================================ */
+
+document.addEventListener(
+    "gesturestart",
+    e =>
+    e.preventDefault()
+);
+
+document.addEventListener(
+    "gesturechange",
+    e =>
+    e.preventDefault()
+);
+
+document.addEventListener(
+    "gestureend",
+    e =>
+    e.preventDefault()
+);
+
+</script>
+
+</body>
+</html>
